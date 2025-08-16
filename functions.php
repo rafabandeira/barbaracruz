@@ -280,7 +280,7 @@ function update_checker( $transient ) {
         return $transient;
     }
     // URL do JSON de atualizações
-    $remote_json = 'https://bandeiragroup.com.br/temas/barbaracruz/barbaracruz.json';
+    $remote_json = 'https://raw.githubusercontent.com/rafabandeira/barbaracruz/refs/heads/main/barbaracruz.json';
     // Buscar dados do JSON
     $response = wp_remote_get( $remote_json, array(
         'timeout' => 10,
