@@ -89,13 +89,11 @@ function navegacao_post() {
     ) );
 }
 
-
 //Adding the Open Graph in the Language Attributes
 function add_opengraph_doctype( $output ) {
     return $output . ' xmlns:og="http://opengraphprotocol.org/schema/" xmlns:fb="http://www.facebook.com/2008/fbml"';
 }
 add_filter('language_attributes', 'add_opengraph_doctype');
-
 //Lets add Open Graph Meta Info
 function insert_fb_in_head() {
 global $post;
@@ -116,6 +114,296 @@ else{
 echo "";
 }
 add_action( 'wp_head', 'insert_fb_in_head', 5 );
+
+
+
+
+/////////////////////////////////////////
+// Adiciona página de ABERTURA DO SITE //
+/////////////////////////////////////////
+function barbaracruz_add_admin_page() {
+    add_menu_page(
+        'Abertura do Site',
+        'Abertura do Site',
+        'manage_options',
+        'opcoes-tema',
+        'barbaracruz_render_page',
+        'dashicons-welcome-view-site',
+        4
+    );
+}
+add_action( 'admin_menu', 'barbaracruz_add_admin_page' );
+/**
+ * Renderiza a página no painel
+ */
+function barbaracruz_render_page() {
+    ?>
+    <div class="wrap">
+        <h1>Opções do Tema</h1>
+        <form method="post" action="options.php">
+            <?php
+                settings_fields( 'barbaracruz_options_group' );
+                do_settings_sections( 'opcoes-tema' );
+                submit_button();
+            ?>
+        </form>
+    </div>
+    <?php
+}
+/**
+ * Registra as opções (imagem, título e texto)
+ */
+function barbaracruz_register_settings() {
+    // 🔹 Campos com valores padrão
+    register_setting( 'barbaracruz_options_group', 'hero_image', array(
+        'default' => get_bloginfo('template_url') . '/assets/img/hero.avif'
+    ));
+    register_setting( 'barbaracruz_options_group', 'hero_title', array(
+        'default' => 'Barbara Cruz'
+    ));
+    register_setting( 'barbaracruz_options_group', 'hero_text', array(
+        'default' => 'Bien-être au naturel'
+    ));
+    add_settings_section(
+        'barbaracruz_section',
+        'Configurações da Seção Hero',
+        null,
+        'opcoes-tema'
+    );
+    add_settings_field(
+        'hero_image',
+        'Imagem de Fundo',
+        'barbaracruz_hero_image_callback',
+        'opcoes-tema',
+        'barbaracruz_section'
+    );
+    add_settings_field(
+        'hero_title',
+        'Título',
+        'barbaracruz_hero_title_callback',
+        'opcoes-tema',
+        'barbaracruz_section'
+    );
+    add_settings_field(
+        'hero_text',
+        'Texto',
+        'barbaracruz_hero_text_callback',
+        'opcoes-tema',
+        'barbaracruz_section'
+    );
+}
+add_action( 'admin_init', 'barbaracruz_register_settings' );
+/**
+ * Callbacks dos campos
+ */
+function barbaracruz_hero_image_callback() {
+    $valor = get_option( 'hero_image', get_bloginfo('template_url') . '/assets/img/hero.avif' );
+    ?>
+    <div style="margin-bottom:10px;">
+        <img id="hero_image_preview" src="<?php echo esc_url($valor); ?>" style="max-width:300px; display:block; margin-bottom:10px;">
+        <input type="hidden" id="hero_image" name="hero_image" value="<?php echo esc_attr($valor); ?>" />
+        <button type="button" class="button" id="hero_image_button">Selecionar imagem</button>
+        <button type="button" class="button" id="hero_image_remove">Remover</button>
+    </div>
+    <script>
+        jQuery(document).ready(function($){
+            var mediaUploader;
+            $('#hero_image_button').click(function(e) {
+                e.preventDefault();
+                if (mediaUploader) {
+                    mediaUploader.open();
+                    return;
+                }
+                mediaUploader = wp.media.frames.file_frame = wp.media({
+                    title: 'Escolher imagem',
+                    button: { text: 'Usar esta imagem' },
+                    multiple: false
+                });
+                mediaUploader.on('select', function() {
+                    var attachment = mediaUploader.state().get('selection').first().toJSON();
+                    $('#hero_image').val(attachment.url);
+                    $('#hero_image_preview').attr('src', attachment.url).show();
+                });
+                mediaUploader.open();
+            });
+            $('#hero_image_remove').click(function(){
+                $('#hero_image').val('');
+                $('#hero_image_preview').hide();
+            });
+        });
+    </script>
+    <?php
+}
+function barbaracruz_hero_title_callback() {
+    $valor = get_option( 'hero_title', '<span>B</span>arbara <span>C</span>ruz' );
+    echo '<input type="text" name="hero_title" value="' . esc_attr( $valor ) . '" class="regular-text" />';
+    echo '<p class="description">Deixe em branco para não exibir.</p>';
+}
+function barbaracruz_hero_text_callback() {
+    $valor = get_option( 'hero_text', 'Bien-être au naturel' );
+    echo '<input type="text" name="hero_text" value="' . esc_attr( $valor ) . '" class="regular-text" />';
+    echo '<p class="description">Deixe em branco para não exibir.</p>';
+}
+function barbaracruz_admin_scripts($hook) {
+    // Só carrega na página de opções do tema
+    if ( $hook != 'toplevel_page_opcoes-tema' ) {
+        return;
+    }
+    wp_enqueue_media();
+    wp_enqueue_script('jquery');
+}
+add_action('admin_enqueue_scripts', 'barbaracruz_admin_scripts');
+
+
+
+
+
+
+//////////////////////////////////
+// Adiciona menu de QUEM EU SOU //
+//////////////////////////////////
+function barbaracruz_add_quem_eu_sou_page() {
+    add_menu_page(
+        'Quem eu sou',               // Título da página
+        'Quem eu sou',               // Nome no menu
+        'manage_options',            // Permissão
+        'quem-eu-sou',               // Slug da página
+        'barbaracruz_render_quem_eu_sou_page', // Callback para renderizar
+        'dashicons-id',              // Ícone
+        4                            // Posição
+    );
+}
+add_action( 'admin_menu', 'barbaracruz_add_quem_eu_sou_page' );
+/**
+ * Renderiza a página "Quem eu sou"
+ */
+function barbaracruz_render_quem_eu_sou_page() {
+    ?>
+    <div class="wrap">
+        <h1>Configurações - Quem eu sou</h1>
+        <form method="post" action="options.php">
+            <?php
+                settings_fields( 'barbaracruz_quem_eu_sou_group' );
+                do_settings_sections( 'quem-eu-sou' );
+                submit_button();
+            ?>
+        </form>
+    </div>
+    <?php
+}
+/**
+ * Registra opções para a página "Quem eu sou"
+ */
+function barbaracruz_register_quem_eu_sou_settings() {
+    // 🔹 Campos com valores padrão
+    register_setting( 'barbaracruz_quem_eu_sou_group', 'about2_title', array(
+        'default' => 'Qui suis-je'
+    ));
+    register_setting( 'barbaracruz_quem_eu_sou_group', 'about2_image', array(
+        'default' => get_bloginfo('template_url') . '/assets/img/barbara.avif'
+    ));
+    register_setting( 'barbaracruz_quem_eu_sou_group', 'about2_text', array(
+        'default' => 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. <em><strong>Mes formations: </strong></em>– Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. – Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.'
+    ));
+    // 🔹 Seção
+    add_settings_section(
+        'barbaracruz_section_about2',
+        'Conteúdo da seção "Quem eu sou"',
+        null,
+        'quem-eu-sou'
+    );
+    // Campo: Título
+    add_settings_field(
+        'about2_title',
+        'Título',
+        'barbaracruz_about2_title_callback',
+        'quem-eu-sou',
+        'barbaracruz_section_about2'
+    );
+    // Campo: Imagem
+    add_settings_field(
+        'about2_image',
+        'Imagem',
+        'barbaracruz_about2_image_callback',
+        'quem-eu-sou',
+        'barbaracruz_section_about2'
+    );
+    // Campo: Texto
+    add_settings_field(
+        'about2_text',
+        'Texto',
+        'barbaracruz_about2_text_callback',
+        'quem-eu-sou',
+        'barbaracruz_section_about2'
+    );
+}
+add_action( 'admin_init', 'barbaracruz_register_quem_eu_sou_settings' );
+function barbaracruz_about2_title_callback() {
+    $valor = get_option( 'about2_title', '<span>Q</span>ui suis-je' );
+    echo '<input type="text" name="about2_title" value="' . esc_attr( $valor ) . '" class="regular-text" />';
+}
+function barbaracruz_about2_image_callback() {
+    $valor = get_option( 'about2_image', get_bloginfo('template_url') . '/assets/img/barbara.avif' );
+    ?>
+    <div style="margin-bottom:10px;">
+        <img id="about2_image_preview" src="<?php echo esc_url($valor); ?>" style="max-width:300px; display:block; margin-bottom:10px;">
+        <input type="hidden" id="about2_image" name="about2_image" value="<?php echo esc_attr($valor); ?>" />
+        <button type="button" class="button" id="about2_image_button">Selecionar imagem</button>
+        <button type="button" class="button" id="about2_image_remove">Remover</button>
+    </div>
+    <script>
+        jQuery(document).ready(function($){
+            var mediaUploader;
+            $('#about2_image_button').click(function(e) {
+                e.preventDefault();
+                if (mediaUploader) {
+                    mediaUploader.open();
+                    return;
+                }
+                mediaUploader = wp.media.frames.file_frame = wp.media({
+                    title: 'Escolher imagem',
+                    button: { text: 'Usar esta imagem' },
+                    multiple: false
+                });
+                mediaUploader.on('select', function() {
+                    var attachment = mediaUploader.state().get('selection').first().toJSON();
+                    $('#about2_image').val(attachment.url);
+                    $('#about2_image_preview').attr('src', attachment.url).show();
+                });
+                mediaUploader.open();
+            });
+            $('#about2_image_remove').click(function(){
+                $('#about2_image').val('');
+                $('#about2_image_preview').hide();
+            });
+        });
+    </script>
+    <?php
+}
+function barbaracruz_about2_text_callback() {
+    $valor = get_option( 'about2_text' );
+    $config_editor = array(
+        'textarea_name' => 'about2_text',
+        'textarea_rows' => 10,
+        'media_buttons' => false, // se quiser permitir botão de adicionar mídia, mude para true
+        'teeny'         => false, // versão reduzida (false = editor completo)
+        'tinymce'       => true,  // habilita TinyMCE
+        'quicktags'     => true   // habilita editor HTML
+    );
+    wp_editor( $valor, 'about2_text_editor', $config_editor );
+}
+function barbaracruz_admin_scripts_quem_eu_sou($hook) {
+    // slug da página = 'toplevel_page_quem-eu-sou'
+    if ( $hook !== 'toplevel_page_quem-eu-sou' ) {
+        return;
+    }
+    wp_enqueue_media();             // carrega media uploader
+    wp_enqueue_script('jquery');    // garante que jQuery está presente
+}
+add_action('admin_enqueue_scripts', 'barbaracruz_admin_scripts_quem_eu_sou');
+
+
+
 
 
 
@@ -333,12 +621,6 @@ add_action( 'admin_init', 'update_checker_multisite_network' );
 
 
 
-
-
-// Incluir as funções de personalização
-require get_template_directory(). '/assets/inc/custom-hero.php';
-require get_template_directory(). '/assets/inc/custom-quisuisje.php';
-require get_template_directory(). '/assets/inc/custom-lessoins.php';
 
 
 ?>

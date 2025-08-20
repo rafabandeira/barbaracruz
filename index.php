@@ -4,54 +4,80 @@
         <main class="main">
 
 
-
-            <!-- About Section -->
-            <section id="about" class="about section" alt="Imagem de mulher plena, contemplando um lindo campo" style="background-image: url(<?php echo get_theme_mod('hero_image', ''.get_bloginfo('template_url').'/assets/img/hero.avif'); ?>);">
+            <!-- ========== HERO SECTION =========== -->
+            <?php
+            $hero_image = get_option('hero_image', get_bloginfo('template_url') . '/assets/img/hero.avif');
+            $hero_title = get_option('hero_title', 'Barbara Cruz');
+            $hero_text  = get_option('hero_text', 'Bien-être au naturel');
+            ?>
+            <?php if ( $hero_image || $hero_title || $hero_text ) : ?>
+            <section id="about" class="about section" alt="Imagem de mulher plena, contemplando um lindo campo" 
+                style="background-image: url(<?php echo esc_url($hero_image); ?>);">
                 <div class="container">
                     <div class="row align-items-center justify-content-center">
                         <div class="col-lg-8 mx-auto text-center">
-                            <img src="<?php bloginfo('template_url'); ?>/assets/img/sol.svg" alt="Imagem estilizada de um sol, commposta por traços finos e delicados" height="200px">
-                            <h1 class="mb-4 fw-light" data-aos="fade-up"><?php echo get_theme_mod('hero_title','<span>B</span>arbara <span>C</span>ruz' ); ?></h1>
-                            <p data-aos="fade-up"><?php echo get_theme_mod('hero_text','Bien-être au naturel' ); ?></p>
+                            <img src="<?php bloginfo('template_url'); ?>/assets/img/sol.svg" alt="Imagem estilizada de um sol, composta por traços finos e delicados" height="200px" data-aos="fade-up">
+                            <?php if ( !empty($hero_title) ) : ?>
+                                <h1 class="mb-4 fw-light" data-aos="fade-up"><?php echo $hero_title; ?></h1>
+                            <?php endif; ?>
+                            <?php if ( !empty($hero_text) ) : ?>
+                                <p data-aos="fade-up"><?php echo $hero_text; ?></p>
+                            <?php endif; ?>
                             <div class="linha-vertical"></div>
                         </div>
                     </div>
                 </div>
-            </section><!-- /About Section -->
+            </section>
+            <?php endif; ?>
+            <!-- ========== END HERO SECTION =========== -->
+
 
             
-
-            <!-- About 2 Section -->
+            <!-- ========== QUEM EU SOU SECTION =========== -->
+            <?php
+            $about2_title = get_option('about2_title', 'Qui suis-je');
+            $about2_image = get_option('about2_image', get_bloginfo('template_url') . '/assets/img/barbara.avif');
+            $about2_text  = get_option('about2_text', 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. <em><strong>Mes formations: </strong></em>– Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. – Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.');
+            ?>
+            <?php if ( $about2_title || $about2_image || $about2_text ) : ?>
             <section id="about-2" class="about-2 section light-background">
                 <div class="container">
                     <div class="linha-vertical"></div>
                     <div class="content">
                         <div class="row">
-                            <h1 class="fw-light content-title text-center"><?php echo get_theme_mod('quisuisje-titulo','<span>Q</span>ui suis-je' ); ?></h1>
+                            <?php if ( !empty($about2_title) ) : ?>
+                                <h1 class="fw-light content-title text-center"><?php echo $about2_title; ?></h1>
+                            <?php endif; ?>
                         </div>
                         <div class="row justify-content-center pt-5">
-
-                            <div class="col-sm-12 col-md-5 col-lg-4 col-xl-4 order-lg-2 offset-xl-1 mb-4">
+                            <?php if ( !empty($about2_image) ) : ?>
+                            <div class="col-sm-12 col-md-5 col-lg-4 col-xl-4 order-lg-2 offset-xl-1 mb-5">
                                 <div class="img-wrap text-center text-md-left" data-aos="fade-up" data-aos-delay="100">
                                     <div class="sombra">
-                                        <?php 
-                                            $image_url = get_theme_mod('quisuisje-imagem', ''.get_bloginfo('template_url').'/assets/img/barbara.avif');
-                                            if ($image_url) {
-                                                echo '<img src="' . $image_url . '" class="img-fluid" alt="Imagem da Fisioterapeuta Bárbara Cruz">';
-                                            } else { } 
-                                        ?>
+                                        <img src="<?php echo esc_url($about2_image); ?>" class="img-fluid" alt="Imagem da Fisioterapeuta Bárbara Cruz">
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-sm-12 col-md-5 col-lg-5 col-xl-4" data-aos="fade-up">
-                                <div class="px-3">
-                                    <?php echo get_theme_mod('quisuisje-texto','Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.</br><em>Mes formations:</em>– Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. <br>– Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.' ); ?>
+                            <?php endif; ?>
+                            <?php if ( !empty($about2_text) ) : ?>
+                                <div class="col-sm-11 col-md-5 col-lg-5 col-xl-5" data-aos="fade-up">
+                                    <div class="px-3">
+                                        <?php echo wp_kses_post( wpautop( $about2_text ) ); ?>
+                                    </div>
                                 </div>
-                            </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
-            </section><!-- /About 2 Section -->
+            </section>
+            <?php endif; ?>
+            <!-- ========== END QUEM EU SOU SECTION =========== -->
+
+
+
+
+
+
 
 
             <!-- Services Section -->

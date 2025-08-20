@@ -38,6 +38,12 @@
     </head>
     <body class="index-page"> 
 
+<?php
+    $about2_title = get_option('about2_title', 'Qui suis-je');
+    $about2_image = get_option('about2_image', get_bloginfo('template_url') . '/assets/img/barbara.avif');
+    $about2_text  = get_option('about2_text', 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. <em><strong>Mes formations: </strong></em>– Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. – Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.');
+?>
+
         <header id="header" class="header d-flex align-items-center sticky-top">
             <div class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
                 <a href="/" class="logo d-flex align-items-center">
@@ -45,7 +51,7 @@
                 </a>
                 <nav id="navmenu" class="navmenu">
                     <ul>
-                        <li><a href="#about-2">À Propos</a></li>
+                        <?php if ( $about2_title || $about2_image || $about2_text ) : ?><li><a href="#about-2"><?php echo $about2_title; ?></a></li><?php endif; ?>
                         <li><a href="#lessoins">Mes Prestations</a></li>
                         <li class="d-none"><a href="#">Actualités</a></li>
                         <li class="d-none"><a href="#">Prendre rendez-vous</a></li>

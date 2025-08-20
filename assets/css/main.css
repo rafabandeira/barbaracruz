@@ -823,39 +823,45 @@ section,
 # About 2 Section
 --------------------------------------------------------------*/
 .about-2 h1 {
-    color: var(--dourado-color);
-    font-size: 50px;
-    text-transform: uppercase;
-}  
-.about-2 h1 span {
-    font-size: 70px;
-}
-.about-2 .content {
-  background-color: var(--surface-color);
-  padding-top: 50px;
-  padding-bottom: 50px;
-}
-.about-2 .linha-vertical {
-    height: 100px;
-    border-right: 2px solid #767654;
-    position: absolute;
-    left: 50%;
-    margin-top: -60px;
-}
-.about-2 .content-title {
   color: var(--dourado-color);
   font-size: 50px;
-  font-weight: lighter;
-  margin-bottom: 30px;
+  text-transform: uppercase;
+}  
+/* Remova a regra de estilo para .about-2 h1 span */
+.about-2 .content {
+background-color: var(--surface-color);
+padding-top: 50px;
+padding-bottom: 50px;
 }
-
+.about-2 .linha-vertical {
+  height: 100px;
+  border-right: 2px solid #767654;
+  position: absolute;
+  left: 50%;
+  margin-top: -60px;
+}
+.about-2 .content-title {
+color: var(--dourado-color);
+font-size: 50px;
+font-weight: lighter;
+margin-bottom: 30px;
+}
+.about-2 .content-subtitle {
+font-size: 15px;
+margin-bottom: 10px;
+display: block;
+color: var(--default-color);
+}
+/* Adicione a nova regra para a primeira letra */
+.about-2 .content-title::first-letter {
+  font-size: 1.5em; /* Ajuste o valor conforme sua necessidade */
+}
 .about-2 .content-subtitle {
   font-size: 15px;
   margin-bottom: 10px;
   display: block;
   color: var(--default-color);
 }
-
 .about-2 p {
   line-height: 1.7;
   color: var(--default-color);
