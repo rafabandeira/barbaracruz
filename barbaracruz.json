@@ -1,14 +1,10 @@
 {
   "name": "Barbara Cruz",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "author": "BandeiraGroup",
   "author_url": "https://bandeiragroup.com.br",
   "details_url": "https://github.com/rafabandeira/barbaracruz/releases",
-  "download_url": "https://github.com/rafabandeira/barbaracruz/archive/refs/tags/v2.0.5.zip",
+  "download_url": "https://github.com/rafabandeira/barbaracruz/archive/refs/tags/v1.8.3.zip",
   "requires_wp": "6.0",
-  "requires_php": "7.4",
-  "last_updated": "2024-08-16 17:10:00",
-  "sections": {
-    "description": "Este é o tema personalizado para o site Bárbara Cruz, desenvolvido para ser leve, rápido e responsivo."
-  }
+  "requires_php": "7.4"
 }
