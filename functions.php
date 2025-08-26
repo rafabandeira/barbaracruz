@@ -1,31 +1,21 @@
 <?php
 
-// Setup
+// Setup do tema
 if ( ! function_exists( 'barbara_setup' ) ) :
 function barbara_setup() {
-	// Add default posts and comments RSS feed links to head.
+	// Adiciona suporte a feeds RSS de posts e comentários
 	add_theme_support( 'automatic-feed-links' );
-	// Post Thumbnails
+	// Adiciona suporte a imagens destacadas
 	add_theme_support( 'post-thumbnails' );
+	// Adiciona suporte a títulos de página
+	add_theme_support( 'title-tag' );
 }
-endif; // barbara_setup
+endif;
 add_action( 'after_setup_theme', 'barbara_setup' );
 
-// Título
-function barbara_wp_title( $title, $sep ) {
-	global $paged, $page;
-	if ( is_feed() ) { return $title; }
-	$title .= get_bloginfo( 'name', 'display' );
-	$site_description = get_bloginfo( 'description', 'display' );
-	if ( $site_description && ( is_home() || is_front_page() ) ) {
-		$title = "$title $sep $site_description";
-	}
-	if ( ( $paged >= 2 || $page >= 2 ) && ! is_404() ) {
-		$title = "$title $sep " . sprintf( __( 'Page %s', 'banews' ), max( $paged, $page ) );
-	}
-	return $title;
-}
-add_filter( 'wp_title', 'barbara_wp_title', 10, 2 );
+// Título - Removido
+// A função `wp_title` já foi substituída por `add_theme_support('title-tag')`,
+// que é a melhor prática atual do WordPress.
 
 // Resumo
 function custom_excerpt($charlength) {
@@ -40,13 +30,36 @@ function custom_excerpt($charlength) {
 		} else {
 			echo $subex;
 		}
-		echo '...';
+		echo '&hellip;'; // Use a entidade HTML para "..."
 	} else {
 		echo $excerpt;
 	}
 }
 
-// Paginação Notícias
+// Enfileirar scripts e estilos
+function barbara_enqueue_scripts() {
+    // Enfileira estilos
+    wp_enqueue_style( 'bootstrap', get_template_directory_uri() . '/assets/vendor/bootstrap/css/bootstrap.min.css', [], '5.3.3' );
+    wp_enqueue_style( 'bootstrap-icons', get_template_directory_uri() . '/assets/vendor/bootstrap-icons/bootstrap-icons.css', [], '1.11.3' );
+    wp_enqueue_style( 'aos', get_template_directory_uri() . '/assets/vendor/aos/aos.css', [], '2.3.4' );
+    wp_enqueue_style( 'swiper', get_template_directory_uri() . '/assets/vendor/swiper/swiper-bundle.min.css', [], '11.0.5' );
+    wp_enqueue_style( 'glightbox', get_template_directory_uri() . '/assets/vendor/glightbox/css/glightbox.min.css', [], '3.2.0' );
+    wp_enqueue_style( 'main', get_template_directory_uri() . '/assets/css/main.css', [], filemtime(get_template_directory() . '/assets/css/main.css') );
+    wp_enqueue_style( 'google-fonts', 'https://fonts.googleapis.com/css2?family=Forum&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Noto+Serif+Display:ital,wght@0,100..900;1,100..900&display=swap', [], null );
+
+    // Enfileira scripts
+    wp_enqueue_script( 'bootstrap-bundle', get_template_directory_uri() . '/assets/vendor/bootstrap/js/bootstrap.bundle.min.js', ['jquery'], '5.3.3', true );
+    wp_enqueue_script( 'php-email-form-validate', get_template_directory_uri() . '/assets/vendor/php-email-form/validate.js', ['jquery'], '1.0', true );
+    wp_enqueue_script( 'aos', get_template_directory_uri() . '/assets/vendor/aos/aos.js', [], '2.3.4', true );
+    wp_enqueue_script( 'swiper-bundle', get_template_directory_uri() . '/assets/vendor/swiper/swiper-bundle.min.js', [], '11.0.5', true );
+    wp_enqueue_script( 'glightbox', get_template_directory_uri() . '/assets/vendor/glightbox/js/glightbox.min.js', [], '3.2.0', true );
+    wp_enqueue_script( 'imagesloaded', get_template_directory_uri() . '/assets/vendor/imagesloaded/imagesloaded.pkgd.min.js', ['jquery'], '5.0.0', true );
+    wp_enqueue_script( 'isotope-layout', get_template_directory_uri() . '/assets/vendor/isotope-layout/isotope.pkgd.min.js', ['jquery'], '3.0.6', true );
+    wp_enqueue_script( 'main', get_template_directory_uri() . '/assets/js/main.js', ['jquery'], filemtime(get_template_directory() . '/assets/js/main.js'), true );
+}
+add_action( 'wp_enqueue_scripts', 'barbara_enqueue_scripts' );
+
+// Paginação e navegação
 function my_pagination() {
     global $wp_query;
     echo paginate_links( array(
@@ -63,7 +76,6 @@ function my_pagination() {
         'end_size' => 1,
     ) );
 }
-// Paginação Busca
 function paginacao_busca() {
     global $busca_query;
     echo paginate_links( array(
@@ -80,40 +92,105 @@ function paginacao_busca() {
         'end_size' => 1,
     ) );
 }
-// Previous/next post navigation.
 function navegacao_post() {
-    echo the_post_navigation( array(
-        'screen_reader_text' => '', 
+    the_post_navigation( array(
+        'screen_reader_text' => '',
         'prev_text' => '<i class="bi bi-arrow-left"></i>',
         'next_text' => '<i class="bi bi-arrow-right"></i>',
     ) );
 }
 
-//Adding the Open Graph in the Language Attributes
-function add_opengraph_doctype( $output ) {
+// Adicionando Open Graph e tags
+function barbara_add_opengraph_doctype( $output ) {
     return $output . ' xmlns:og="http://opengraphprotocol.org/schema/" xmlns:fb="http://www.facebook.com/2008/fbml"';
 }
-add_filter('language_attributes', 'add_opengraph_doctype');
-//Lets add Open Graph Meta Info
-function insert_fb_in_head() {
-global $post;
-if ( !is_singular()) //if it is not a post or a page
-    return;
-    echo '<meta property="og:title" content="'.get_the_title().'"/>';
+add_filter('language_attributes', 'barbara_add_opengraph_doctype');
+function barbara_insert_fb_in_head() {
+    if ( !is_singular() ) {
+        return;
+    }
+    global $post;
+    echo '<meta property="og:title" content="' . esc_attr(get_the_title()) . '"/>';
     echo '<meta property="og:type" content="article"/>';
-    echo '<meta property="og:url" content="'.get_permalink().'"/>';
-    echo '<meta property="og:site_name" content="Barbara Cruz"/>';
-if(!has_post_thumbnail( $post->ID )) { //the post does not have featured image, use a default image
-    $default_image="https://barbaracruz.bandeiragroup.com.br/wp-content/themes/barbaracruz/assets/img/logo.png"; //replace this with a default image on your server or an image in your media library
-    echo '<meta property="og:image" content="'.$default_image.'"/>';
+    echo '<meta property="og:url" content="' . esc_url(get_permalink()) . '"/>';
+    echo '<meta property="og:site_name" content="' . esc_attr(get_bloginfo('name')) . '"/>';
+    if( has_post_thumbnail( $post->ID ) ) {
+        $thumbnail_src = wp_get_attachment_image_src( get_post_thumbnail_id( $post->ID ), 'medium' );
+        echo '<meta property="og:image" content="' . esc_url( $thumbnail_src[0] ) . '"/>';
+    } else {
+        $default_image = get_template_directory_uri() . '/assets/img/logo.png';
+        echo '<meta property="og:image" content="' . esc_url($default_image) . '"/>';
+    }
 }
-else{
-    $thumbnail_src = wp_get_attachment_image_src( get_post_thumbnail_id( $post->ID ), 'medium' );
-    echo '<meta property="og:image" content="'.esc_attr( $thumbnail_src[0] ).'"/>';
+add_action( 'wp_head', 'barbara_insert_fb_in_head', 5 );
+
+
+
+
+
+/**
+ * Remove as caixas padrão e o painel de boas-vindas do painel do WordPress.
+ */
+function barbaracruz_remove_dashboard_widgets() {
+    // Remove o painel de boas-vindas.
+    remove_action( 'welcome_panel', 'wp_welcome_panel' );
+
+    // Remove as caixas padrão do painel.
+    remove_meta_box( 'dashboard_right_now',   'dashboard', 'normal' );  // Visão geral / At a Glance
+    remove_meta_box( 'dashboard_activity',    'dashboard', 'normal' );  // Atividade
+    remove_meta_box( 'dashboard_quick_press', 'dashboard', 'side'   );  // Rascunho Rápido / Quick Draft
+    remove_meta_box( 'dashboard_primary',     'dashboard', 'side'   );  // Novidades do WordPress / WordPress News
+    remove_meta_box( 'dashboard_secondary',   'dashboard', 'side'   );  // Outras notícias do WordPress
+    remove_meta_box( 'dashboard_site_health', 'dashboard', 'normal' );  // Saúde do Site
+    remove_meta_box( 'dashboard_incoming_links', 'dashboard', 'normal' ); // Links de Entrada
+    remove_meta_box( 'dashboard_plugins',     'dashboard', 'normal' );  // Plugins
 }
-echo "";
+add_action( 'wp_dashboard_setup', 'barbaracruz_remove_dashboard_widgets' );
+
+/**
+ * Adiciona uma caixa personalizada ao painel.
+ */
+function barbaracruz_add_dashboard_widgets() {
+    wp_add_dashboard_widget(
+        'barbaracruz_custom_dashboard_widget',          // ID do widget
+        'Guia Rápido do Site',                          // Título do widget
+        'barbaracruz_custom_dashboard_widget_content'   // Nome da função que exibe o conteúdo
+    );
 }
-add_action( 'wp_head', 'insert_fb_in_head', 5 );
+add_action( 'wp_dashboard_setup', 'barbaracruz_add_dashboard_widgets' );
+
+/**
+ * Conteúdo da caixa personalizada do painel.
+ */
+function barbaracruz_custom_dashboard_widget_content() {
+    echo '<h3>Seja bem-vindo(a) ao seu painel!</h3>';
+    echo '<p>Aqui estão alguns links úteis para gerenciar o site:</p>';
+    echo '<ul>';
+    echo '<li><a href="' . esc_url( admin_url( 'themes.php?page=opcoes-tema' ) ) . '">Configurar a seção "Abertura do Site"</a></li>';
+    echo '<li><a href="' . esc_url( admin_url( 'themes.php?page=quem-eu-sou' ) ) . '">Configurar a seção "Quem Eu Sou"</a></li>';
+    echo '<hr>';
+    echo '<li><a href="' . esc_url( admin_url( 'post-new.php?post_type=servicos' ) ) . '">Adicionar Novo Serviço</a></li>';
+    echo '<li><a href="' . esc_url( admin_url( 'edit.php?post_type=servicos' ) ) . '">Ver Todos os Serviços</a></li>';
+    echo '<li><a href="' . esc_url( admin_url( 'edit.php?post_type=depoimentos' ) ) . '">Gerenciar Depoimentos</a></li>';
+    echo '<li><a href="' . esc_url( admin_url( 'edit.php?post_type=mosaico_fotos' ) ) . '">Gerenciar Fotos do Mosaico</a></li>';
+    echo '</ul>';
+    echo '<p>Para qualquer dúvida ou suporte, entre em contato com o desenvolvedor.</p>';
+}
+
+
+
+
+
+/**
+ * Remove os menus padrão do painel de administração.
+ */
+function barbaracruz_remove_admin_menus() {
+    // Remove o menu "Páginas".
+    remove_menu_page( 'edit.php?post_type=page' );
+    // Remove o menu "Comentários".
+    remove_menu_page( 'edit-comments.php' );
+}
+add_action( 'admin_menu', 'barbaracruz_remove_admin_menus' );
 
 
 
@@ -125,11 +202,11 @@ function barbaracruz_add_admin_page() {
     add_menu_page(
         'Abertura do Site',
         'Abertura do Site',
-        'manage_options',
+        'edit_published_posts',
         'opcoes-tema',
         'barbaracruz_render_page',
         'dashicons-welcome-view-site',
-        4
+        4 
     );
 }
 add_action( 'admin_menu', 'barbaracruz_add_admin_page' );
@@ -235,7 +312,7 @@ function barbaracruz_hero_image_callback() {
     <?php
 }
 function barbaracruz_hero_title_callback() {
-    $valor = get_option( 'hero_title', '<span>B</span>arbara <span>C</span>ruz' );
+    $valor = get_option( 'hero_title', 'Barbara Cruz' );
     echo '<input type="text" name="hero_title" value="' . esc_attr( $valor ) . '" class="regular-text" />';
     echo '<p class="description">Deixe em branco para não exibir.</p>';
 }
@@ -266,11 +343,11 @@ function barbaracruz_add_quem_eu_sou_page() {
     add_menu_page(
         'Quem eu sou',               // Título da página
         'Quem eu sou',               // Nome no menu
-        'manage_options',            // Permissão
+        'edit_published_posts',      // Permissão
         'quem-eu-sou',               // Slug da página
         'barbaracruz_render_quem_eu_sou_page', // Callback para renderizar
         'dashicons-id',              // Ícone
-        4                            // Posição
+        5                            // Posição
     );
 }
 add_action( 'admin_menu', 'barbaracruz_add_quem_eu_sou_page' );
@@ -339,7 +416,7 @@ function barbaracruz_register_quem_eu_sou_settings() {
 }
 add_action( 'admin_init', 'barbaracruz_register_quem_eu_sou_settings' );
 function barbaracruz_about2_title_callback() {
-    $valor = get_option( 'about2_title', '<span>Q</span>ui suis-je' );
+    $valor = get_option( 'about2_title', 'Qui suis-je' );
     echo '<input type="text" name="about2_title" value="' . esc_attr( $valor ) . '" class="regular-text" />';
 }
 function barbaracruz_about2_image_callback() {
@@ -430,6 +507,7 @@ function create_post_type_depoimentos() {
         'has_archive' => true,
         'menu_icon' => 'dashicons-businessperson',
         'rewrite' => array('slug' => 'depoimentos'),
+        'menu_position' => 7    // Posição
     ));
 }
 // Iniciar o tipo de post
@@ -458,6 +536,8 @@ function create_post_type_servicos() {
         'has_archive' => true,
         'menu_icon' => 'dashicons-heart',
         'rewrite' => array('slug' => 'servicos'),
+        'menu_position' => 6    // Posição
+
     ));
 }
 // Iniciar o tipo de post
@@ -465,7 +545,11 @@ add_action('init', 'create_post_type_servicos');
 
 
 
-// Criar o tipo de post para o Mosaico de Fotos
+
+
+////////////////////////////////////////////////// 
+// Criar o tipo de post para o Mosaico de Fotos //
+//////////////////////////////////////////////////
 function create_post_type_mosaico_fotos() {
     register_post_type('mosaico_fotos',
     // Definir as opções
@@ -485,6 +569,7 @@ function create_post_type_mosaico_fotos() {
         'has_archive' => true,
         'menu_icon' => 'dashicons-format-gallery',
         'rewrite' => array('slug' => 'mosaico-fotos'),
+        'menu_position' => 8    // Posição
     ));
 }
 // Iniciar o tipo de post
@@ -554,6 +639,60 @@ function servicos_save_custom_meta($post_id) {
     }
 }
 add_action('save_post', 'servicos_save_custom_meta');
+
+
+
+
+
+/////////////////////////////////////////////////
+// Reordena os menus nativos "Posts" e "Mídia" //
+/////////////////////////////////////////////////
+function barbaracruz_reorder_menus() {
+    remove_menu_page( 'edit.php' ); // Remove o menu "Posts"
+    remove_menu_page( 'upload.php' ); // Remove o menu "Mídia"
+    add_menu_page(
+        'Posts',
+        'Posts',
+        'edit_published_posts',
+        'edit.php',
+        '', // A função de callback é vazia pois o WordPress já a define
+        'dashicons-admin-post',
+        9 // Posição 
+    );
+    add_menu_page(
+        'Mídia',
+        'Mídia',
+        'edit_published_posts',
+        'upload.php',
+        '',
+        'dashicons-admin-media',
+        10 // Posição 
+    );
+}
+add_action( 'admin_menu', 'barbaracruz_reorder_menus', 99 );
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////
+// Oculta menus do painel de administração   //
+// para usuários que não são administradores //
+///////////////////////////////////////////////
+function barbaracruz_remove_menus_for_non_admins() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        remove_menu_page( 'themes.php' );         // Oculta o menu "Aparência"
+        remove_menu_page( 'plugins.php' );        // Oculta o menu "Plugins"
+        remove_menu_page( 'tools.php' );          // Oculta o menu "Ferramentas"
+    }
+}
+add_action( 'admin_menu', 'barbaracruz_remove_menus_for_non_admins' );
 
 
 
