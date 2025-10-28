@@ -9,6 +9,11 @@ function barbara_setup() {
 	add_theme_support( 'post-thumbnails' );
 	// Adiciona suporte a títulos de página
 	add_theme_support( 'title-tag' );
+
+    // REGISTO DE MENU CORRIGIDO: Adiciona suporte a menus
+    register_nav_menus( array(
+        'primary' => __( 'Menu Principal', 'barbaracruz' ),
+    ) );
 }
 endif;
 add_action( 'after_setup_theme', 'barbara_setup' );
@@ -109,6 +114,8 @@ function barbara_insert_fb_in_head() {
     if ( !is_singular() ) {
         return;
     }
+    // NOTA: Recomenda-se usar um plugin de SEO para isto,
+    // pois ele evitará duplicatas e terá mais opções.
     global $post;
     echo '<meta property="og:title" content="' . esc_attr(get_the_title()) . '"/>';
     echo '<meta property="og:type" content="article"/>';
@@ -201,7 +208,7 @@ add_action( 'admin_menu', 'barbaracruz_remove_admin_menus' );
 function barbaracruz_add_admin_page() {
     add_menu_page(
         'Abertura do Site',
-        'Abertura do Site',
+        'AbertURA do Site',
         'edit_published_posts',
         'opcoes-tema',
         'barbaracruz_render_page',
@@ -606,17 +613,23 @@ function servicos_add_custom_metaboxes() {
 }
 add_action('add_meta_boxes', 'servicos_add_custom_metaboxes');
 
+// CORREÇÃO DE SEGURANÇA: Adiciona o campo nonce
 function servicos_subtitle_metabox_callback($post) {
+    // Adiciona um nonce field para verificação
+    wp_nonce_field('servicos_custom_meta_nonce', 'servicos_nonce_field');
+    
     $value = get_post_meta($post->ID, '_servicos_subtitle', true);
     echo '<input type="text" style="width:100%" name="servicos_subtitle_field" value="' . esc_attr($value) . '" placeholder="Digite o subtítulo aqui" />';
 }
 
 function servicos_ordem_metabox_callback($post) {
+    // O nonce já foi adicionado no callback anterior, não é necessário repetir
     $value = get_post_meta($post->ID, '_servicos_ordem', true);
     echo '<input type="number" min="0" style="width:100%" name="servicos_ordem_field" value="' . esc_attr($value) . '" placeholder="Ex: 1" />';
 }
 
 function servicos_cor_metabox_callback($post) {
+    // O nonce já foi adicionado no callback anterior, não é necessário repetir
     $value = get_post_meta($post->ID, '_servicos_cor', true);
     ?>
     <select name="servicos_cor_field" style="width:100%">
@@ -627,15 +640,60 @@ function servicos_cor_metabox_callback($post) {
     <?php
 }
 
+// CORREÇÃO DE SEGURANÇA: Adiciona verificações na função de guardar
 function servicos_save_custom_meta($post_id) {
+    
+    // 1. Verificar se o nosso nonce foi enviado.
+    if ( ! isset( $_POST['servicos_nonce_field'] ) ) {
+        return;
+    }
+
+    // 2. Verificar se o nonce é válido.
+    if ( ! wp_verify_nonce( $_POST['servicos_nonce_field'], 'servicos_custom_meta_nonce' ) ) {
+        return;
+    }
+
+    // 3. Se for um autosave, não fazer nada.
+    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+        return;
+    }
+
+    // 4. Verificar as permissões do utilizador.
+    if ( isset( $_POST['post_type'] ) && 'servicos' == $_POST['post_type'] ) {
+        if ( ! current_user_can( 'edit_post', $post_id ) ) {
+            return;
+        }
+    } else {
+        return; // Se não for do tipo 'servicos', saia
+    }
+
+    // Agora, podemos guardar os dados.
+
+    // Guardar Subtítulo
     if (array_key_exists('servicos_subtitle_field', $_POST)) {
-        update_post_meta($post_id, '_servicos_subtitle', sanitize_text_field($_POST['servicos_subtitle_field']));
+        update_post_meta(
+            $post_id, 
+            '_servicos_subtitle', 
+            sanitize_text_field($_POST['servicos_subtitle_field'])
+        );
     }
+    
+    // Guardar Ordem
     if (array_key_exists('servicos_ordem_field', $_POST)) {
-        update_post_meta($post_id, '_servicos_ordem', intval($_POST['servicos_ordem_field']));
+        update_post_meta(
+            $post_id, 
+            '_servicos_ordem', 
+            intval($_POST['servicos_ordem_field'])
+        );
     }
+    
+    // Guardar Cor
     if (array_key_exists('servicos_cor_field', $_POST)) {
-        update_post_meta($post_id, '_servicos_cor', sanitize_text_field($_POST['servicos_cor_field']));
+        update_post_meta(
+            $post_id, 
+            '_servicos_cor', 
+            sanitize_text_field($_POST['servicos_cor_field'])
+        );
     }
 }
 add_action('save_post', 'servicos_save_custom_meta');
@@ -701,7 +759,9 @@ add_action( 'admin_menu', 'barbaracruz_remove_menus_for_non_admins' );
 /////////////////////////////////////////////////////////
 // Verificar atualizações do tema via servidor pessoal //
 /////////////////////////////////////////////////////////
-delete_site_transient('update_themes');
+
+// CORREÇÃO DE PERFORMANCE: A linha delete_site_transient() foi removida daqui.
+
 function update_checker( $transient ) {
     if ( empty( $transient->checked ) ) {
         return $transient;
@@ -742,24 +802,10 @@ function update_checker( $transient ) {
     return $transient;
 }
 add_filter( 'pre_set_site_transient_update_themes', 'update_checker' );
-// Garantir que o código funcione em Multisite
-function update_checker_multisite_network() {
-    if ( is_multisite() ) {
-        $sites = get_sites();
-        foreach ( $sites as $site ) {
-            switch_to_blog( $site->blog_id );
-            // Executar o código de verificação para cada site
-            $transient = get_site_transient( 'update_themes' );
-            $transient = update_checker( $transient );
-            set_site_transient( 'update_themes', $transient );
-            restore_current_blog();
-        }
-    }
-}
-add_action( 'admin_init', 'update_checker_multisite_network' );
 
 
-
+// CORREÇÃO DE PERFORMANCE: A função 'update_checker_multisite_network' foi removida
+// por ser redundante e causar problemas de performance.
 
 
 ?>
