@@ -20,9 +20,34 @@
 
 <header id="header" class="header d-flex align-items-center sticky-top">
     <div class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
+        
+        <?php
+        // CORREÇÃO: Substituído logo estático (hardcoded) pela função 'custom_logo'
+        // O logo agora é gerenciável em Aparência > Personalizar > Identidade do Site
+        $custom_logo_id = get_theme_mod( 'custom_logo' );
+        $logo_url = wp_get_attachment_image_src( $custom_logo_id , 'full' );
+        $logo_alt = get_post_meta( $custom_logo_id, '_wp_attachment_image_alt', true );
+        
+        // Fallback para o alt text
+        if ( empty($logo_alt) ) {
+            $logo_alt = get_bloginfo( 'name' );
+        }
+
+        // Define a imagem do logo (customizável ou fallback)
+        if ( has_custom_logo() && $logo_url ) {
+            $logo_src = esc_url( $logo_url[0] );
+            $alt_text = esc_attr( $logo_alt );
+        } else {
+            // Fallback para o logo original
+            $logo_src = get_template_directory_uri() . '/assets/img/logo-barbaracruz.png';
+            $alt_text = esc_attr( 'Marca da Fisioterapeuta Bárbara Cruz' ); // Manter o alt original
+        }
+        ?>
+        
         <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="logo d-flex align-items-center">
-            <img src="<?php echo get_template_directory_uri(); ?>/assets/img/logo-barbaracruz.png" alt="Marca da Fisioterapeuta Bárbara Cruz" class="img-fluid">
+            <img src="<?php echo $logo_src; ?>" alt="<?php echo $alt_text; ?>" class="img-fluid">
         </a>
+        
         <nav id="navmenu" class="navmenu">
 
             <?php

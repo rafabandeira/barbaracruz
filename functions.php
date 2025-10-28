@@ -9,6 +9,14 @@ function barbara_setup() {
 	add_theme_support( 'post-thumbnails' );
 	// Adiciona suporte a títulos de página
 	add_theme_support( 'title-tag' );
+	
+	// CORREÇÃO: Adiciona suporte ao Logo Customizável
+    add_theme_support( 'custom-logo', array(
+        'height'      => 100, // Ajuste conforme necessário
+        'width'       => 400, // Ajuste conforme necessário
+        'flex-height' => true,
+        'flex-width'  => true,
+    ) );
 
     // REGISTO DE MENU CORRIGIDO: Adiciona suporte a menus
     register_nav_menus( array(
@@ -53,6 +61,7 @@ function barbara_enqueue_scripts() {
     wp_enqueue_style( 'google-fonts', 'https://fonts.googleapis.com/css2?family=Forum&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Noto+Serif+Display:ital,wght@0,100..900;1,100..900&display=swap', [], null );
 
     // Enfileira scripts
+    // NOTA: Bootstrap 5 não requer 'jquery' como dependência, mas outros scripts o utilizam.
     wp_enqueue_script( 'bootstrap-bundle', get_template_directory_uri() . '/assets/vendor/bootstrap/js/bootstrap.bundle.min.js', ['jquery'], '5.3.3', true );
     wp_enqueue_script( 'php-email-form-validate', get_template_directory_uri() . '/assets/vendor/php-email-form/validate.js', ['jquery'], '1.0', true );
     wp_enqueue_script( 'aos', get_template_directory_uri() . '/assets/vendor/aos/aos.js', [], '2.3.4', true );
@@ -173,7 +182,8 @@ function barbaracruz_custom_dashboard_widget_content() {
     echo '<h3>Seja bem-vindo(a) ao seu painel!</h3>';
     echo '<p>Aqui estão alguns links úteis para gerenciar o site:</p>';
     echo '<ul>';
-    echo '<li><a href="' . esc_url( admin_url( 'themes.php?page=opcoes-tema' ) ) . '">Configurar a seção "Abertura do Site"</a></li>';
+    echo '<li><a href="' . esc_url( admin_url( 'themes.php?page=opcoes-tema' ) ) . '">Configurar "Abertura do Site" e "Rodapé"</a></li>';
+    echo '<li><a href="' . esc_url( admin_url( 'customize.php' ) ) . '">Alterar o Logo do Site</a></li>';
     echo '<li><a href="' . esc_url( admin_url( 'themes.php?page=quem-eu-sou' ) ) . '">Configurar a seção "Quem Eu Sou"</a></li>';
     echo '<hr>';
     echo '<li><a href="' . esc_url( admin_url( 'post-new.php?post_type=servicos' ) ) . '">Adicionar Novo Serviço</a></li>';
@@ -224,6 +234,7 @@ function barbaracruz_render_page() {
     ?>
     <div class="wrap">
         <h1>Opções do Tema</h1>
+        <p>Use esta página para gerenciar a seção de abertura (Hero) e as informações de contato do rodapé.</p>
         <form method="post" action="options.php">
             <?php
                 settings_fields( 'barbaracruz_options_group' );
@@ -238,7 +249,7 @@ function barbaracruz_render_page() {
  * Registra as opções (imagem, título e texto)
  */
 function barbaracruz_register_settings() {
-    // 🔹 Campos com valores padrão
+    // 🔹 Campos com valores padrão (Grupo Hero)
     register_setting( 'barbaracruz_options_group', 'hero_image', array(
         'default' => get_bloginfo('template_url') . '/assets/img/hero.avif'
     ));
@@ -248,6 +259,8 @@ function barbaracruz_register_settings() {
     register_setting( 'barbaracruz_options_group', 'hero_text', array(
         'default' => 'Bien-être au naturel'
     ));
+    
+    // Seção Hero
     add_settings_section(
         'barbaracruz_section',
         'Configurações da Seção Hero',
@@ -275,10 +288,50 @@ function barbaracruz_register_settings() {
         'opcoes-tema',
         'barbaracruz_section'
     );
+
+    // 
+    // CORREÇÃO: Adicionando campos para o Rodapé (Footer)
+    // 
+    
+    // 🔹 Campos com valores padrão (Grupo Rodapé)
+    register_setting( 'barbaracruz_options_group', 'footer_phone', array( 'default' => '06 59 66 56 78' ));
+    register_setting( 'barbaracruz_options_group', 'footer_instagram', array( 'default' => '@barbaracruz.br' ));
+    register_setting( 'barbaracruz_options_group', 'footer_email', array( 'default' => 'contact@barbaracruz.fr' ));
+    
+    // Seção Rodapé
+    add_settings_section(
+        'barbaracruz_footer_section',
+        'Configurações do Rodapé',
+        null,
+        'opcoes-tema'
+    );
+
+    // Campos Rodapé
+    add_settings_field(
+        'footer_phone',
+        'Telefone',
+        'barbaracruz_footer_phone_callback',
+        'opcoes-tema',
+        'barbaracruz_footer_section'
+    );
+    add_settings_field(
+        'footer_instagram',
+        'Instagram',
+        'barbaracruz_footer_instagram_callback',
+        'opcoes-tema',
+        'barbaracruz_footer_section'
+    );
+    add_settings_field(
+        'footer_email',
+        'Email',
+        'barbaracruz_footer_email_callback',
+        'opcoes-tema',
+        'barbaracruz_footer_section'
+    );
 }
 add_action( 'admin_init', 'barbaracruz_register_settings' );
 /**
- * Callbacks dos campos
+ * Callbacks dos campos Hero
  */
 function barbaracruz_hero_image_callback() {
     $valor = get_option( 'hero_image', get_bloginfo('template_url') . '/assets/img/hero.avif' );
@@ -339,7 +392,22 @@ function barbaracruz_admin_scripts($hook) {
 add_action('admin_enqueue_scripts', 'barbaracruz_admin_scripts');
 
 
-
+/**
+ * CORREÇÃO: Callbacks dos campos de Rodapé
+ */
+function barbaracruz_footer_phone_callback() {
+    $valor = get_option( 'footer_phone', '06 59 66 56 78' );
+    echo '<input type="text" name="footer_phone" value="' . esc_attr( $valor ) . '" class="regular-text" placeholder="06 59 66 56 78" />';
+}
+function barbaracruz_footer_instagram_callback() {
+    $valor = get_option( 'footer_instagram', '@barbaracruz.br' );
+    echo '<input type="text" name="footer_instagram" value="' . esc_attr( $valor ) . '" class="regular-text" placeholder="@barbaracruz.br" />';
+    echo '<p class="description">Insira o @ do instagram (Ex: @barbaracruz.br).</p>';
+}
+function barbaracruz_footer_email_callback() {
+    $valor = get_option( 'footer_email', 'contact@barbaracruz.fr' );
+    echo '<input type="email" name="footer_email" value="' . esc_attr( $valor ) . '" class="regular-text" placeholder="contact@barbaracruz.fr" />';
+}
 
 
 
