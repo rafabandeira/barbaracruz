@@ -824,8 +824,12 @@ section, .section {
 /*--------------------------------------------------------------
 # About 2 Section
 --------------------------------------------------------------*/
-.about-2 h1 {
+.about-2 h1, .about-2 h2, .about-2 h3, .about-2 h4, .about-2 h5, .about-2 h6 {
   color: var(--dourado-color);
+	padding-top: 20px;
+	text-transform: uppercase;
+} 
+.about-2 h1 {
   font-size: 50px;
   text-transform: uppercase;
 }  

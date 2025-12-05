@@ -33,7 +33,7 @@
     $about2_text  = get_option('about2_text', 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. <em><strong>Mes formations: </strong></em>– Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. – Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.');
     ?>
     <?php if ( !empty($about2_title) || !empty($about2_image) || !empty($about2_text) ) : ?>
-        <section id="about-2" class="about-2 section light-background">
+        <section id="<?php echo esc_attr(sanitize_title($about2_title)); ?>" class="about-2 section light-background">
             <div class="container">
                 <div class="linha-vertical"></div>
                 <div class="content">
@@ -53,7 +53,7 @@
                             </div>
                         <?php endif; ?>
                         <?php if ( !empty($about2_text) ) : ?>
-                            <div class="col-sm-11 col-md-5 col-lg-5 col-xl-5" data-aos="fade-up">
+                            <div class="col-sm-11 col-md-9 col-lg-9 col-xl-9" data-aos="fade-up">
                                 <div class="px-3">
                                     <?php echo wp_kses_post( wpautop( $about2_text ) ); ?>
                                 </div>
@@ -79,11 +79,11 @@
     // A verificação é feita aqui
     if( $my_query_servicos->have_posts() ) :
     ?>
-    <section id="lessoins" class="services section bg-dourado">
+    <section id="mes-prestations" class="services section bg-dourado">
         <div class="container">
             <div class="row">
                 <img src="<?php echo get_template_directory_uri(); ?>/assets/img/sol.svg" alt="Imagem estilizada de um sol, commposta por traços finos e delicados" height="200px">
-                <h1 class="fw-light text-center"><?php echo get_theme_mod('lessoins-title','<span>M</span>es <span>P</span>restations' ); ?></h1>
+                <h1 class="fw-light text-center"><?php echo get_theme_mod('lessoins-title', '<span>M</span>es <span>P</span>restations'); ?></h1>
             </div>
         </div>
     </section>
@@ -124,12 +124,12 @@
 
 
 
-    <section id="testimonials" class="testimonials section bg-areia">
+    <section id="vos-avis" class="testimonials section bg-areia">
 
         <div class="container section-title" data-aos="fade-up">
             <div class="linha-vertical"></div>
             <div class="row">
-                <h1 class="fw-light content-title text-center"><span>V</span>os avis</h1>
+                <h1 class="fw-light content-title text-center"><span>V</span>os <span>A</span>vis</h1>
             </div>
         </div><div class="container" data-aos="fade-up">
             <div class="row justify-content-center">
