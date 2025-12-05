@@ -218,7 +218,7 @@ add_action( 'admin_menu', 'barbaracruz_remove_admin_menus' );
 function barbaracruz_add_admin_page() {
     add_menu_page(
         'Abertura do Site',
-        'Abertura do Site',
+        'AbertURA do Site',
         'edit_published_posts',
         'opcoes-tema',
         'barbaracruz_render_page',

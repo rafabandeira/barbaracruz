@@ -4,7 +4,6 @@
 <main class="main">
 
     <?php
-    // Seção Hero (Correto: usa Settings API)
     $hero_image = get_option('hero_image', get_template_directory_uri() . '/assets/img/hero.avif');
     $hero_title = get_option('hero_title', 'Barbara Cruz');
     $hero_text  = get_option('hero_text', 'Bien-être au naturel');
@@ -29,7 +28,6 @@
         </section>
     <?php endif; ?>
     <?php
-    // Seção "Quem eu sou" (Correto: usa Settings API)
     $about2_title = get_option('about2_title', 'Qui suis-je');
     $about2_image = get_option('about2_image', get_template_directory_uri() . '/assets/img/barbara.avif');
     $about2_text  = get_option('about2_text', 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. <em><strong>Mes formations: </strong></em>– Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. – Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.');
@@ -67,7 +65,7 @@
         </section>
     <?php endif; ?>
     <?php
-    // Seção Serviços (CPT)
+    // args
     $my_args_servicos = array(
         'post_type'      => 'servicos',
         'order'          => 'ASC',
@@ -75,30 +73,27 @@
         'meta_key'       => '_servicos_ordem',
         'orderby'        => 'meta_value_num',
     );
+    // query
     $my_query_servicos = new WP_Query( $my_args_servicos );
 
-    // CORREÇÃO BUG 2: Buscar o e-mail global (definido em functions.php) fora do loop.
-    $contact_email = get_option('footer_email', 'contact@barbaracruz.fr');
-
+    // A verificação é feita aqui
     if( $my_query_servicos->have_posts() ) :
     ?>
     <section id="lessoins" class="services section bg-dourado">
         <div class="container">
             <div class="row">
                 <img src="<?php echo get_template_directory_uri(); ?>/assets/img/sol.svg" alt="Imagem estilizada de um sol, commposta por traços finos e delicados" height="200px">
-                
-                <h1 class="fw-light text-center"><?php _e('<span>M</span>es <span>P</span>restations', 'barbaracruz' ); ?></h1>
-            
+                <h1 class="fw-light text-center"><?php echo get_theme_mod('lessoins-title','<span>M</span>es <span>P</span>restations' ); ?></h1>
             </div>
         </div>
     </section>
     <?php while( $my_query_servicos->have_posts() ) : $my_query_servicos->the_post();
         $cor = get_post_meta(get_the_ID(), '_servicos_cor', true);
-        if (!$cor) { $cor = 'bg-dourado'; } 
-        
+        if (!$cor) { $cor = 'bg-dourado'; }
+        // Garantindo que a URL da imagem não está vazia antes de exibir
         $thumbnail_url = get_the_post_thumbnail_url(get_the_ID(), 'large');
         if ( !$thumbnail_url ) {
-            $thumbnail_url = get_template_directory_uri() . '/assets/img/default-service.png'; // Fallback
+            $thumbnail_url = get_template_directory_uri() . '/assets/img/default-service.png'; // Caminho para uma imagem padrão
         }
     ?>
         <section class="service-1 section <?php echo esc_attr($cor); ?>">
@@ -112,10 +107,8 @@
                         <p class="content-subtitle"><?php echo esc_html(get_post_meta(get_the_ID(), '_servicos_subtitle', true)); ?></p>
                         <p><?php the_excerpt(); ?></p>
                         <div class="d-flex gap-2">
-                            <a href="<?php echo esc_url(get_permalink()); ?>" class="btn btn-get-started"><?php _e('En savoir plus', 'barbaracruz'); ?></a>
-                            
-                            <a href="mailto:<?php echo esc_attr($contact_email); ?>" class="btn btn-get-started"><?php _e('Prendre rendez-vous', 'barbaracruz'); ?></a>
-                        
+                            <a href="<?php echo esc_url(get_permalink()); ?>" class="btn btn-get-started">En savoir plus</a>
+                            <a href="<?php echo esc_url(get_theme_mod('lessoins-link1','https://wa.me/+33659665678')); ?>" class="btn btn-get-started">Prendre rendez-vous</a>
                         </div>
                     </div>
                 </div>
@@ -123,7 +116,7 @@
         </section>
     <?php
     endwhile;
-    wp_reset_postdata(); 
+    wp_reset_postdata(); // Usa wp_reset_postdata() para a query secundária
     endif;
     ?>
 
@@ -136,7 +129,7 @@
         <div class="container section-title" data-aos="fade-up">
             <div class="linha-vertical"></div>
             <div class="row">
-                <h1 class="fw-light content-title text-center"><?php _e('<span>V</span>os avis', 'barbaracruz'); ?></h1>
+                <h1 class="fw-light content-title text-center"><span>V</span>os avis</h1>
             </div>
         </div><div class="container" data-aos="fade-up">
             <div class="row justify-content-center">
@@ -166,8 +159,9 @@
                         </script>
                         <div class="swiper-wrapper">
                             <?php
-                            // CPT Depoimentos (Correto)
+                            // args
                             $my_args_depoimentos = array( 'post_type' => 'depoimentos', 'order' => 'ASC', 'posts_per_page' => -1 );
+                            // query
                             $my_query_depoimentos = new WP_Query ( $my_args_depoimentos );
                             ?>
                             <?php if( $my_query_depoimentos->have_posts() ) :
@@ -185,28 +179,27 @@
                     </div>
 
                     <section id="portfolio" class="portfolio section">
-                        <div class="isotope-layout" data-default-filter="*" data-layout="masonry" data-sort="original-order">
-                            <div class="row gy-4 isotope-container" data-aos="fade-up" data-aos-delay="200">
-                                <?php
-                                // CPT Mosaico (Correto)
-                                $args_mosaico = array(
-                                    'post_type' => 'mosaico_fotos',
-                                    'posts_per_page' => -1,
-                                );
-                                $query_mosaico = new WP_Query($args_mosaico);
-                                if ($query_mosaico->have_posts()) :
-                                    while ($query_mosaico->have_posts()) : $query_mosaico->the_post();
-                                        ?>
-                                        <div class="col-lg-4 col-md-6 portfolio-item isotope-item">
-                                            <?php the_post_thumbnail('large', array('class' => 'img-fluid rounded')); ?>
-                                        </div><?php endwhile; endif; wp_reset_postdata(); ?>
-                            </div>
+                        <div class="container">
+                            <div class="isotope-layout" data-default-filter="*" data-layout="masonry" data-sort="original-order">
+                                <div class="row gy-4 isotope-container" data-aos="fade-up" data-aos-delay="200">
+                                    <?php
+                                    $args_mosaico = array(
+                                        'post_type' => 'mosaico_fotos',
+                                        'posts_per_page' => -1,
+                                    );
+                                    $query_mosaico = new WP_Query($args_mosaico);
+                                    if ($query_mosaico->have_posts()) :
+                                        while ($query_mosaico->have_posts()) : $query_mosaico->the_post();
+                                            ?>
+                                            <div class="col-lg-4 col-md-6 portfolio-item isotope-item">
+                                                <?php the_post_thumbnail('large', array('class' => 'img-fluid rounded')); ?>
+                                            </div><?php endwhile; endif; wp_reset_postdata(); ?>
+                                </div></div>
                         </div>
-                    </section>
-                
-                </div> </div> </div> </section>
-    
-    <section id="galeria" class="services section bg-dourado">
+                    </section></div>
+            </div>
+        </div>
+    </section><section id="galeria" class="services section bg-dourado">
         <div class="container">
             <div class="row">
                 <?php echo do_shortcode(' [insta-gallery id="0"] '); ?>
@@ -217,7 +210,7 @@
             <div class="linha-vertical"></div>
             <div class="content">
                 <div class="row">
-                    <h1 class="fw-light content-title text-center"><?php _e('<span>C</span>ontact', 'barbaracruz'); ?></h1>
+                    <h1 class="fw-light content-title text-center"><span>C</span>ontact</h1>
                 </div>
                 <div class="row justify-content-center pt-5">
 

@@ -1,10 +1,10 @@
 {
   "name": "Barbara Cruz",
-  "version": "1.9.2",
+  "version": "1.9.0",
   "author": "BandeiraGroup",
   "author_url": "https://bandeiragroup.com.br",
   "details_url": "https://github.com/rafabandeira/barbaracruz/releases",
-  "download_url": "https://github.com/rafabandeira/barbaracruz/archive/refs/tags/v1.9.2.zip",
+  "download_url": "https://github.com/rafabandeira/barbaracruz/archive/refs/tags/v1.9.0.zip",
   "requires_wp": "6.0",
   "requires_php": "7.4"
 }

@@ -46,6 +46,9 @@
     --background-color: #A8832B;
     --surface-color: #F3EDE0;
 }
+.bg-dourado > h1, h2, h3, h4, h5, h6 {
+    --surface-color: #F3EDE0;
+}
 .terracota {
     --background-color: #F3EDE0;
     --surface-color: #C17052;
@@ -724,8 +727,7 @@ h6 {
 /*--------------------------------------------------------------
 # Global Sections
 --------------------------------------------------------------*/
-section,
-.section {
+section, .section {
   color: var(--default-color);
   background-color: var(--background-color);
   padding: 60px 0;
@@ -911,6 +913,13 @@ color: var(--default-color);
 .services h1 span {
     font-size: 70px;
 }
+.service-1 > h1, h2, h3, h4, h5, h6 {
+  color: var(--areia-color);
+}
+.service-1 > ul > li {
+  color: var(--areia-color);
+}
+
 .services .imagem, .service-1 .imagem, .service-2 .imagem, .service-3 .imagem {
     height: 90%;
     width: 90%;
